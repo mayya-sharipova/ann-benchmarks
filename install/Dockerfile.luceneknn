@@ -1,0 +1,6 @@
+FROM ann-benchmarks
+
+# Install JDK and Lucene
+RUN apt-get install -y openjdk-11-jdk-headless
+COPY ./luceneknn/lib lib
+COPY ./luceneknn/classes classes
