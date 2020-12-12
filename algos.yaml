@@ -59,10 +59,6 @@ float:
           arg-groups:
             - {"M": 4,  "efConstruction": 500}
           query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
-        M-8:
-          arg-groups:
-            - {"M": 8,  "efConstruction": 500}
-          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
 
     luceneknn:
       docker-tag: ann-benchmarks-luceneknn

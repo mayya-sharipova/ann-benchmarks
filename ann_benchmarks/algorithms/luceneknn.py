@@ -20,7 +20,6 @@ class LuceneBatch(BaseANN):
         self.dimension = dimension
         self.param = param
         self.short_name = f"luceneknn-{dimension}-{param['M']}-{param['efConstruction']}"
-        self.logger = logging.getLogger("annb")
         self.n_iters = -1
         self.train_size = -1
         #if self.metric not in ("euclidean", "angular"):
@@ -50,7 +49,6 @@ class LuceneBatch(BaseANN):
         raise NotImplementedError(f"Single query testing not implemented: use -batch mode only")
 
     def prepare_batch_query(self, X, n):
-        ## TODO: use prepare_batch_query/run_batch_query so this time is not counted
         if self.metric == 'angular':
             X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
         data_filename = self.short_name + ".test"
@@ -59,12 +57,13 @@ class LuceneBatch(BaseANN):
         self.n_iters = X.shape[0]
         self.topK = n
         
-    def run_batch_query(self, n):
+    def run_batch_query(self):
         data_filename = self.short_name + ".test"
         output_filename = self.short_name + ".out"
-        self.knn_tester('-niter', str(self.n_iters), '-topK', str(n),
+        self.knn_tester('-niter', str(self.n_iters), '-topK', str(self.topK),
                         '-fanout', str(self.fanout),
                         '-search', data_filename,
+                        '-warm', '0',
                         '-docs', self.short_name + '.train',
                         '-out', output_filename)
 
@@ -86,7 +85,8 @@ class LuceneBatch(BaseANN):
                '-cp', 'lib/*:classes',
                '-Xmx2g', '-Xms2g',
                'org.apache.lucene.util.hnsw.KnnGraphTester',
-               '-echo',
                '-dim', str(self.dimension)
         ] + list(args)
+        sys.stderr.write(str(cmd))
         subprocess.run(cmd)
+
