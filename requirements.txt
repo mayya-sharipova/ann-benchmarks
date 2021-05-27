@@ -3,8 +3,8 @@ docker==2.6.1
 #h5py==2.7.1
 h5py
 matplotlib==2.1.0
-numpy==1.19.4
-pyyaml==3.12
+numpy==1.13.3
+pyyaml==5.4
 psutil==5.6.6
 #scipy==1.0.0
 scipy==1.1.0

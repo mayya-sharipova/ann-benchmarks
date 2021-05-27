@@ -1,7 +1,7 @@
 Benchmarking nearest neighbors
 ==============================
 
-[![travis badge](https://img.shields.io/travis/erikbern/ann-benchmarks/master.svg?style=flat)](https://travis-ci.org/erikbern/ann-benchmarks)
+[![Build Status](https://img.shields.io/github/workflow/status/erikbern/ann-benchmarks/ANN%20benchmarks?style=flat-square)](https://github.com/erikbern/ann-benchmarks/actions?query=workflow:benchmarks)
 
 Doing fast searching of nearest neighbors in high dimensional spaces is an increasingly important problem, but so far there has not been a lot of empirical attempts at comparing approaches in an objective way.
 
@@ -24,12 +24,14 @@ Evaluated
 * [Datasketch](https://github.com/ekzhu/datasketch)
 * [PyNNDescent](https://github.com/lmcinnes/pynndescent)
 * [MRPT](https://github.com/teemupitkanen/mrpt)
-* [NGT](https://github.com/yahoojapan/NGT): ONNG, PANNG
+* [NGT](https://github.com/yahoojapan/NGT): ONNG, PANNG, QG
 * [SPTAG](https://github.com/microsoft/SPTAG)
 * [PUFFINN](https://github.com/puffinn/puffinn)
 * [N2](https://github.com/kakao/n2)
 * [ScaNN](https://github.com/google-research/google-research/tree/master/scann)
 * [Elastiknn](https://github.com/alexklibisz/elastiknn)
+* [OpenDistro Elasticsearch KNN](https://github.com/opendistro-for-elasticsearch/k-NN)
+* [DiskANN](https://github.com/microsoft/diskann): Vamana, Vamana-PQ
 
 Data sets
 =========
@@ -129,7 +131,7 @@ Principles
 * Focus on datasets that fit in RAM. Out of core ANN could be the topic of a later comparison.
 * We mainly support CPU-based ANN algorithms. GPU support exists for FAISS, but it has to be compiled with GPU support locally and experiments must be run using the flags `--local --batch`. 
 * Do proper train/test set of index data and query points.
-* Note that set similarity was supported in the past. This might hopefully be added back soon.
+* Note that we consider that set similarity datasets are sparse and thus we pass a **sorted** array of integers to algorithms to represent the set of each user.
 
 
 Authors

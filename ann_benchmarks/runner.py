@@ -12,8 +12,7 @@ import numpy
 import psutil
 
 from ann_benchmarks.algorithms.definitions import (Definition,
-                                                   instantiate_algorithm,
-                                                   get_algorithm_name)
+                                                   instantiate_algorithm)
 from ann_benchmarks.datasets import get_dataset, DATASETS
 from ann_benchmarks.distance import metrics, dataset_transform
 from ann_benchmarks.results import store_results
@@ -104,15 +103,14 @@ error: query argument groups have been specified for %s.%s(%s), but the \
 algorithm instantiated from it does not implement the set_query_arguments \
 function""" % (definition.module, definition.constructor, definition.arguments)
 
-    D = get_dataset(dataset)
+    D, dimension = get_dataset(dataset)
     X_train = numpy.array(D['train'])
     X_test = numpy.array(D['test'])
     distance = D.attrs['distance']
-    print('got a train set of size (%d * %d)' % X_train.shape)
+    print('got a train set of size (%d * %d)' % (X_train.shape[0], dimension))
     print('got %d queries' % len(X_test))
 
-    X_train = dataset_transform[distance](X_train)
-    X_test = dataset_transform[distance](X_test)
+    X_train, X_test = dataset_transform(D)
 
     try:
         prepared_queries = False
@@ -142,8 +140,7 @@ function""" % (definition.module, definition.constructor, definition.arguments)
                 algo, X_train, X_test, distance, count, run_count, batch)
             descriptor["build_time"] = build_time
             descriptor["index_size"] = index_size
-            descriptor["algo"] = get_algorithm_name(
-                definition.algorithm, batch)
+            descriptor["algo"] = definition.algorithm
             descriptor["dataset"] = dataset
             store_results(dataset, count, definition,
                           query_arguments, descriptor, results, batch)
@@ -152,39 +149,54 @@ function""" % (definition.module, definition.constructor, definition.arguments)
 
 
 def run_from_cmdline():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser('''
+
+            NOTICE: You probably want to run.py rather than this script.
+
+''')
     parser.add_argument(
         '--dataset',
         choices=DATASETS.keys(),
+        help=f'Dataset to benchmark on.',
         required=True)
     parser.add_argument(
         '--algorithm',
+        help='Name of algorithm for saving the results.',
         required=True)
     parser.add_argument(
         '--module',
+        help='Python module containing algorithm. E.g. "ann_benchmarks.algorithms.annoy"',
         required=True)
     parser.add_argument(
         '--constructor',
+        help='Constructer to load from modulel. E.g. "Annoy"',
         required=True)
     parser.add_argument(
         '--count',
+        help='K: Number of nearest neighbours for the algorithm to return.',
         required=True,
         type=int)
     parser.add_argument(
         '--runs',
+        help='Number of times to run the algorihm. Will use the fastest run-time over the bunch.',
         required=True,
         type=int)
     parser.add_argument(
         '--batch',
+        help='If flag included, algorithms will be run in batch mode, rather than "individual query" mode.',
         action='store_true')
     parser.add_argument(
-        'build')
+        'build',
+        help='JSON of arguments to pass to the constructor. E.g. ["angular", 100]'
+        )
     parser.add_argument(
         'queries',
+        help='JSON of arguments to pass to the queries. E.g. [100]',
         nargs='*',
         default=[])
     args = parser.parse_args()
     algo_args = json.loads(args.build)
+    print(algo_args)
     query_args = [json.loads(q) for q in args.queries]
 
     definition = Definition(
@@ -253,5 +265,4 @@ def run_docker(definition, dataset, count, runs, timeout, batch, cpu_limit,
         logger.error('Container.wait for container %s failed with exception' % container.short_id)
         traceback.print_exc()
     finally:
-        pass
-        # container.remove(force=True)
+        container.remove(force=True)

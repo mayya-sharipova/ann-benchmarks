@@ -15,19 +15,6 @@ def jaccard(a, b):
     intersect = len(set(a) & set(b))
     return intersect / (float)(len(a) + len(b) - intersect)
 
-def transform_dense_to_sparse(X):
-    """Converts the n * m dataset into a sparse format
-    that only holds the non-zero entries (Jaccard)."""
-    # get list of indices of non-zero elements
-    indices = np.transpose(np.where(X))
-    keys = []
-    for _, js in itertools.groupby(indices, lambda ij: ij[0]):
-        keys.append([j for _, j in js])
-
-    assert len(X) == len(keys)
-
-    return keys
-
 metrics = {
     'hamming': {
         'distance': lambda a, b: pdist(a, b, "hamming"),
@@ -48,9 +35,19 @@ metrics = {
     }
 }
 
-dataset_transform = {
-    'hamming': lambda X: X,
-    'euclidean': lambda X: X,
-    'angular': lambda X: X,
-    'jaccard' : lambda X: transform_dense_to_sparse(X)
-}
+def sparse_to_lists(data, lengths):
+    X = []
+    index = 0
+    for l in lengths:
+        X.append(data[index:index+l])
+        index += l
+    
+    return X
+
+def dataset_transform(dataset):
+    if dataset.attrs.get('type', 'dense') != 'sparse':
+        return np.array(dataset['train']), np.array(dataset['test'])
+    
+    # we store the dataset as a list of integers, accompanied by a list of lengths in hdf5
+    # so we transform it back to the format expected by the algorithms here (array of array of ints)
+    return sparse_to_lists(dataset['train'], dataset['size_train']), sparse_to_lists(dataset['test'], dataset['size_test'])

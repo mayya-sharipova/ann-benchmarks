@@ -15,16 +15,22 @@ class Puffinn(BaseANN):
         self.hash_args = hash_args
 
     def fit(self, X):
+        if self.metric == 'angular':
+            dimensions = len(X[0])
+        else:
+            dimensions = 0
+            for x in X:
+                dimensions = max(dimensions, max(x)+1)
+
         if self.hash_args:
-            self.index = puffinn.Index(self.metric, len(X[0]), self.space,\
+            self.index = puffinn.Index(self.metric, dimensions, self.space,\
                     hash_function=self.hash_function, hash_source=self.hash_source,\
                     hash_args=self.hash_args)
         else:
-            self.index = puffinn.Index(self.metric, len(X[0]), self.space,\
+            self.index = puffinn.Index(self.metric, dimensions, self.space,\
                     hash_function=self.hash_function, hash_source=self.hash_source)
         for i, x in enumerate(X):
-            if self.metric == 'angular':
-                x = x.tolist()
+            x = x.tolist()
             self.index.insert(x)
         self.index.rebuild()
 
@@ -32,10 +38,8 @@ class Puffinn(BaseANN):
         self.recall = recall
 
     def query(self, v, n):
-        if self.metric == 'angular':
-            v = v.tolist()
+        v = v.tolist()
         return self.index.search(v, n, self.recall)
 
     def __str__(self):
         return 'PUFFINN(space=%d, recall=%f, hf=%s, hashsource=%s)' % (self.space, self.recall, self.hash_function, self.hash_source)
-

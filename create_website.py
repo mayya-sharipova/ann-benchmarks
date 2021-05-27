@@ -10,7 +10,6 @@ import hashlib
 from jinja2 import Environment, FileSystemLoader
 
 from ann_benchmarks import results
-from ann_benchmarks.algorithms.definitions import get_algorithm_name
 from ann_benchmarks.datasets import get_dataset
 from ann_benchmarks.plotting.plot_variants import (all_plot_variants
                                                    as plot_variants)
@@ -177,12 +176,11 @@ def build_detail_site(data, label_func, j2_env, linestyles, batch=False):
             data_for_plot[k] = prepare_data(runs[k], 'k-nn', 'qps')
         plot.create_plot(
             data_for_plot, False,
-            False, True, 'k-nn', 'qps',
-            args.outputdir + get_algorithm_name(name, batch) + ".png",
+            'linear', 'log', 'k-nn', 'qps',
+            args.outputdir + name + '.png',
             linestyles, batch)
-        output_path = "".join([args.outputdir,
-                               get_algorithm_name(name, batch),
-                               ".html"])
+        output_path = \
+            args.outputdir + name + '.html'
         with open(output_path, "w") as text_file:
             text_file.write(j2_env.get_template("detail_page.html").
                             render(title=label, plot_data=data,
@@ -215,8 +213,7 @@ def build_index_site(datasets, algorithms, j2_env, file_name):
         text_file.write(j2_env.get_template("summary.html").
                         render(title="ANN-Benchmarks",
                                dataset_with_distances=dataset_data,
-                               algorithms=algorithms,
-                               label_func=get_algorithm_name))
+                               algorithms=algorithms))
 
 
 def load_all_results():
@@ -225,23 +222,23 @@ def load_all_results():
     all_runs_by_algorithm = {'batch': {}, 'non-batch': {}}
     cached_true_dist = []
     old_sdn = None
-    for properties, f in results.load_all_results():
-        sdn = get_run_desc(properties)
-        if sdn != old_sdn:
-            dataset = get_dataset(properties["dataset"])
-            cached_true_dist = list(dataset["distances"])
-            old_sdn = sdn
-        algo = properties["algo"]
-        ms = compute_all_metrics(
-            cached_true_dist, f, properties, args.recompute)
-        algo_ds = get_dataset_label(sdn)
-        idx = "non-batch"
-        if properties["batch_mode"]:
-            idx = "batch"
-        all_runs_by_algorithm[idx].setdefault(
-            algo, {}).setdefault(algo_ds, []).append(ms)
-        all_runs_by_dataset[idx].setdefault(
-            sdn, {}).setdefault(algo, []).append(ms)
+    for mode in ["non-batch", "batch"]:
+        for properties, f in results.load_all_results(batch_mode=(mode == "batch")):
+            sdn = get_run_desc(properties)
+            if sdn != old_sdn:
+                dataset, _ = get_dataset(properties["dataset"])
+                cached_true_dist = list(dataset["distances"])
+                old_sdn = sdn
+            algo_ds = get_dataset_label(sdn)
+            desc_suffix = ("-batch" if mode == "batch" else "")
+            algo = properties["algo"] + desc_suffix
+            sdn += desc_suffix
+            ms = compute_all_metrics(
+                cached_true_dist, f, properties, args.recompute)
+            all_runs_by_algorithm[mode].setdefault(
+                algo, {}).setdefault(algo_ds, []).append(ms)
+            all_runs_by_dataset[mode].setdefault(
+                sdn, {}).setdefault(algo, []).append(ms)
 
     return (all_runs_by_dataset, all_runs_by_algorithm)
 

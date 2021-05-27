@@ -189,7 +189,6 @@ float:
            - {"M": 96,  "efConstruction": 500}
          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
 
-
     flann:
      docker-tag: ann-benchmarks-flann
      module: ann_benchmarks.algorithms.flann
@@ -353,12 +352,12 @@ float:
       run-groups:
         NN-10-20:
           arg-groups:
-            - {"n_neighbors": [10, 20], "diversify_epsilon": [1.0],
+            - {"n_neighbors": [10, 20], "diversify_prob": [1.0],
                "pruning_degree_multiplier":[1.5, 2.0], "leaf_size": 32}
           query-args: [[0.0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.16]]
         NN-40-80:
           arg-groups:
-            - {"n_neighbors": [40, 80], "diversify_epsilon": [0.0, 1.0],
+            - {"n_neighbors": [40, 80], "diversify_prob": [0.0, 1.0],
                "pruning_degree_multiplier":[2.0, 2.5], "leaf_size": 64}
           query-args: [[0.0, 0.04, 0.08, 0.12, 0.16, 0.20, 0.24, 0.28, 0.32]]
     NGT-panng:
@@ -378,10 +377,26 @@ float:
       run-groups :
         onng:
            args : [{'edge': 100, 'outdegree': 10, 'indegree': 120}]
-           query-args : [[0.6, 0.9, 1.0, 1.02, 1.03, 1.05, 1.07, 1.1, 1.2]]
-        onng-80-60-graph:
-           args : [{'edge': 100, 'outdegree': 10, 'indegree': 80, 'search_edge': 60, 'tree': False}]
-           query-args : [[0.6, 0.9, 0.995, 0.998, 1.0, 1.01, 1.02, 1.05, 1.07]]
+           query-args : [[[0.60, -2], [0.90, -2], [1.00, -2], [1.02, -2], [1.03, -2],
+                          [1.04, -2], [1.05, -2], [1.07, -2], [1.10, -2], [1.20, -2]]]
+        onng-with-refinement:
+           args : [{'edge': 100, 'outdegree': 10, 'indegree': 120, 'tree': False, 'refine': True}]
+           query-args : [[[0.995, 40], [0.998, 40], [1.00, 40], [1.005, 40], [1.010, 40],
+                          [1.015, 40], [1.020, 40]]]
+    NGT-qg:
+      docker-tag: ann-benchmarks-ngt
+      module: ann_benchmarks.algorithms.qg_ngt
+      constructor : QG
+      base-args : ["@metric", "Float", 0.1]
+      run-groups :
+        me-96:
+           args : [{'edge': 100, 'outdegree': 64, 'indegree': 120, 'max_edge': 96}]
+           query-args : [[[1.2, 0.90], [1.2, 0.95], [1.2, 0.98], [1.2, 1.00], [1.2, 1.02],
+                          [1.5, 0.90], [1.5, 0.95], [1.5, 0.98], [1.5, 1.00], [1.5, 1.02],
+                          [2.0, 0.90], [2.0, 0.95], [2.0, 0.98], [2.0, 1.00], [2.0, 1.02],
+                          [3.0, 0.90], [3.0, 0.95], [3.0, 0.98], [3.0, 1.00], [3.0, 1.02],
+                          [  5, 1.00], [ 10, 1.00], [ 20, 1.00],
+                          [  2, 1.04], [  3, 1.04], [  5, 1.04], [  8, 1.04]]]
     mrpt:
       docker-tag: ann-benchmarks-mrpt
       module: ann_benchmarks.algorithms.mrpt
@@ -404,6 +419,86 @@ float:
           args: []
 
   euclidean:
+    vamana(diskann):
+      docker-tag: ann-benchmarks-diskann
+      module: ann_benchmarks.algorithms.diskann
+      constructor: Vamana
+      base-args : ["@metric"]
+      run-groups :
+        vamana_100_64_1-2:
+           args : [{'l_build': 100, 'max_outdegree': 64, 'alpha': 1.2}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_100_64_1-1:
+           args : [{'l_build': 100, 'max_outdegree': 64, 'alpha': 1.1}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_100_64_1:
+           args : [{'l_build': 100, 'max_outdegree': 64, 'alpha': 1}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_125_32_1-2:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1.2}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_125_32_1-1:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1.1}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_125_32_1:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+    vamana-pq(diskann):
+      docker-tag: ann-benchmarks-diskann_pq
+      module: ann_benchmarks.algorithms.diskann
+      constructor: VamanaPQ
+      base-args : ["@metric"]
+      run-groups :
+        vamana_pq_100_64_1-2_32:
+           args : [{'l_build': 100, 'max_outdegree': 64, 'alpha': 1.2, 'chunks': 32}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_100_64_1_32:
+           args : [{'l_build': 100, 'max_outdegree': 64, 'alpha': 1, 'chunks': 32}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_80_64_1-2_96:
+           args : [{'l_build': 80, 'max_outdegree': 64, 'alpha': 1.2, 'chunks': 96}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_80_64_1_96:
+           args : [{'l_build': 80, 'max_outdegree': 64, 'alpha': 1, 'chunks': 96}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_80_64_1-2_112:
+           args : [{'l_build': 80, 'max_outdegree': 64, 'alpha': 1.2, 'chunks': 112}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_80_64_1_112:
+           args : [{'l_build': 80, 'max_outdegree': 64, 'alpha': 1, 'chunks': 112}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_32_1-2_32:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1.2, 'chunks': 32}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_32_1_32:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1, 'chunks': 32}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_32_1-2_96:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1.2, 'chunks': 96}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_32_1_96:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1, 'chunks': 96}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_32_1-2_112:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1.2, 'chunks': 112}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_32_1_112:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1, 'chunks': 112}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+    scann:
+      docker-tag: ann-benchmarks-scann
+      module: ann_benchmarks.algorithms.scann
+      constructor: Scann
+      run-groups:
+        scann1:
+          args: [[600], [.nan], [2], ["squared_l2"]]
+          query-args: [[[4, 40], [3, 30], [6, 60], [8, 74], [9, 78], [10, 82], [11, 85], [13, 100], [16, 120], [20, 140], [30, 180], [35, 240], [50, 360]]]
+        scann2:
+          args: [[2000], [.nan], [4], ["squared_l2"]]
+          query-args: [[[10, 100], [15, 140], [25, 160], [35, 190], [40, 200], [45, 220], [50, 240], [60, 250], [70, 300], [80, 400], [100, 500], [120, 600], [150, 800], [200, 900]]]
+        scann3:
+          args: [[100], [.nan], [4], ["squared_l2"]]
+          query-args: [[[2, 20], [3, 20], [3, 30], [4, 30], [5, 40], [8, 80]]]
     kgraph:
       docker-tag: ann-benchmarks-kgraph
       module: ann_benchmarks.algorithms.kgraph
@@ -486,16 +581,26 @@ float:
       constructor: PyNNDescent
       base-args: ["@metric"]
       run-groups:
-        NN-10-20:
+        NN-10:
           arg-groups:
-            - {"n_neighbors": [10, 20], "diversify_epsilon": [1.0],
-               "pruning_degree_multiplier":[1.5, 2.0], "leaf_size": 32}
-          query-args: [[0.0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.16]]
-        NN-40-80:
+            - {"n_neighbors": 10, "diversify_prob": 1.0,
+               "pruning_degree_multiplier":[0.5, 1.0], "leaf_size": 24}
+          query-args: [[0.0, 0.01, 0.02, 0.03, 0.04, 0.06, 0.08, 0.10, 0.12]]
+        NN-20:
           arg-groups:
-            - {"n_neighbors": [40, 80], "diversify_epsilon": [0.0, 1.0],
-               "pruning_degree_multiplier":[2.0, 2.5], "leaf_size": 64}
-          query-args: [[0.0, 0.04, 0.08, 0.12, 0.16, 0.20, 0.24, 0.28, 0.32]]
+            - {"n_neighbors": 20, "diversify_prob": 1.0,
+               "pruning_degree_multiplier":[0.75, 1.5], "leaf_size": 24}
+          query-args: [[0.0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.16, 0.20]]
+        NN-40:
+          arg-groups:
+            - {"n_neighbors": 40, "diversify_prob": [0.0, 1.0],
+               "pruning_degree_multiplier":[1.0, 2.0], "leaf_size": 36}
+          query-args: [[0.0, 0.02, 0.04, 0.08, 0.12, 0.16, 0.20, 0.24, 0.28, 0.32]]
+        NN-60:
+          arg-groups:
+            - {"n_neighbors": 60, "diversify_prob": 0.0,
+               "pruning_degree_multiplier":[2.0, 3.0], "leaf_size": 48}
+          query-args: [[0.0, 0.04, 0.08, 0.12, 0.16, 0.20, 0.24, 0.28, 0.32, 0.36]]
     elasticsearch:
       docker-tag: ann-benchmarks-elasticsearch
       module: ann_benchmarks.algorithms.elasticsearch
@@ -518,8 +623,108 @@ float:
           query-args:
           - [1000, 10000]
           - [0, 6]
+    opendistroknn:
+      docker-tag: ann-benchmarks-opendistroknn
+      module: ann_benchmarks.algorithms.opendistroknn
+      constructor: OpenDistroKNN
+      base-args: ["@metric", "@dimension"]
+      run-groups:
+        M-4:
+          arg-groups:
+            - {"M": 4,  "efConstruction": 500}
+          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        M-8:
+          arg-groups:
+            - {"M": 8,  "efConstruction": 500}
+          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        M-12:
+          arg-groups:
+            - {"M": 12,  "efConstruction": 500}
+          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        M-16:
+          arg-groups:
+            - {"M": 16,  "efConstruction": 500}
+          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        M-24:
+          arg-groups:
+            - {"M": 24,  "efConstruction": 500}
+          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        M-36:
+          arg-groups:
+            - {"M": 36,  "efConstruction": 500}
+          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        M-48:
+          arg-groups:
+            - {"M": 48,  "efConstruction": 500}
+          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
 
   angular:
+    vamana(diskann):
+      docker-tag: ann-benchmarks-diskann
+      module: ann_benchmarks.algorithms.diskann
+      constructor: Vamana
+      base-args : ["@metric"]
+      run-groups :
+        vamana_125_64_1-2:
+           args : [{'l_build': 125, 'max_outdegree': 64, 'alpha': 1.2}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_125_64_1-1:
+           args : [{'l_build': 125, 'max_outdegree': 64, 'alpha': 1.1}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_125_64_1:
+           args : [{'l_build': 125, 'max_outdegree': 64, 'alpha': 1}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_125_32_1-2:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1.2}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_125_32_1-1:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1.1}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_125_32_1:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+    vamana-pq(diskann):
+      docker-tag: ann-benchmarks-diskann_pq
+      module: ann_benchmarks.algorithms.diskann
+      constructor: VamanaPQ
+      base-args : ["@metric"]
+      run-groups :
+        vamana_pq_125_64_1-2_14:
+           args : [{'l_build': 125, 'max_outdegree': 64, 'alpha': 1.2, 'chunks': 14}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_64_1_14:
+           args : [{'l_build': 125, 'max_outdegree': 64, 'alpha': 1, 'chunks': 14}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_64_1-2_28:
+           args : [{'l_build': 125, 'max_outdegree': 64, 'alpha': 1.2, 'chunks': 28}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_64_1_28:
+           args : [{'l_build': 125, 'max_outdegree': 64, 'alpha': 1, 'chunks': 28}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_64_1-2_42:
+           args : [{'l_build': 125, 'max_outdegree': 64, 'alpha': 1.2, 'chunks': 42}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_64_1_42:
+           args : [{'l_build': 125, 'max_outdegree': 64, 'alpha': 1, 'chunks': 42}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_32_1-2_14:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1.2, 'chunks': 14}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_32_1_14:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1, 'chunks': 14}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_32_1-2_28:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1.2, 'chunks': 28}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_32_1_28:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1, 'chunks': 28}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_32_1-2_42:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1.2, 'chunks': 42}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+        vamana_pq_125_32_1_42:
+           args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1, 'chunks': 42}]
+           query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
     puffinn:
       docker-tag: ann-benchmarks-puffinn
       module: ann_benchmarks.algorithms.puffinn
@@ -607,38 +812,51 @@ float:
       run-groups:
         NN-20:
           arg-groups:
-            - {"n_neighbors": [20], "diversify_epsilon": [0.75, 1.0],
-               "pruning_degree_multiplier":[1.0, 1.5], leaf_size: 32}
-          query-args: [[0.0, 0.01, 0.02, 0.04, 0.08, 0.12, 0.16]]
+            - {"n_neighbors": [20], "diversify_prob": [1.0],
+               "pruning_degree_multiplier":[0.5, 1.0], leaf_size: 20}
+          query-args: [[0.0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12]]
         NN-40:
           arg-groups:
-            - {"n_neighbors": [40], "diversify_epsilon": [0.5, 1.0],
-               "pruning_degree_multiplier":[1.5, 2.0], leaf_size: 48}
-          query-args: [[0.0, 0.04, 0.08, 0.12, 0.16, 0.20, 0.24]]
-        NN-80:
+            - {"n_neighbors": [40], "diversify_prob": [0.5, 1.0],
+               "pruning_degree_multiplier":[1.5], leaf_size: 25}
+          query-args: [[0.0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.16]]
+        NN-80-fast:
           arg-groups:
-            - {"n_neighbors": [80], "diversify_epsilon": [0.25, 1.0],
-               "pruning_degree_multiplier":[1.75, 2.25], leaf_size: 64}
-          query-args: [[0.0, 0.08, 0.12, 0.16, 0.20, 0.24, 0.28, 0.32]]
-        NN-120:
+            - {"n_neighbors": 80, diversify_prob: 1.0,
+               "pruning_degree_multiplier": 2.0, leaf_size: 20}
+          query-args: [[0.0, 0.02, 0.04, 0.08, 0.12, 0.16, 0.20, 0.24]]
+        NN-80-accurate:
           arg-groups:
-            - {"n_neighbors": [120], "diversify_epsilon": [0.0, 1.0],
-               "pruning_degree_multiplier":[2.0, 2.5], leaf_size: 80}
-          query-args: [[0.08, 0.16, 0.20, 0.24, 0.28, 0.32, 0.36]]
+            - {"n_neighbors": 80, diversify_prob: 0.25,
+                "pruning_degree_multiplier": 2.0, leaf_size: 30}
+          query-args: [[0.08, 0.12, 0.16, 0.20, 0.24, 0.28, 0.32, 0.36]]
+        NN-120-fast:
+          arg-groups:
+            - {"n_neighbors": 120, "diversify_prob": 1.0,
+               "pruning_degree_multiplier":2.5, leaf_size: 20}
+          query-args: [[0.0, 0.04, 0.08, 0.16, 0.20, 0.24, 0.28, 0.32]]
+        NN-120-accurate:
+          arg-groups:
+            - {"n_neighbors": 120, "diversify_prob": 0.125,
+               "pruning_degree_multiplier":2.5, leaf_size: 35}
+          query-args: [[0.16, 0.20, 0.24, 0.28, 0.32, 0.36]]
     scann:
       docker-tag: ann-benchmarks-scann
       module: ann_benchmarks.algorithms.scann
       constructor: Scann
       run-groups:
         scann1:
-          args: [[2000], [0.2], [2]]
-          query-args: [[[30, 120], [35, 100], [40, 80], [45, 80], [50, 80], [55, 95], [60, 110], [65, 110], [75, 110], [90, 110], [110, 120], [130, 150], [150, 200], [170, 200], [200, 300], [220, 500], [250, 500], [310, 300], [400, 300], [500, 500], [800, 1000]]]
+          args: [[2000], [0.2], [2], ["dot_product"]]
+          query-args: [[[1, 30], [2, 30], [4, 30], [8, 30], [30, 120], [35, 100], [40, 80], [45, 80], [50, 80], [55, 95], [60, 110], [65, 110], [75, 110], [90, 110], [110, 120], [130, 150], [150, 200], [170, 200], [200, 300], [220, 500], [250, 500], [310, 300], [400, 300], [500, 500], [800, 1000]]]
         scann2:
-          args: [[1500], [0.55], [1]]
-          query-args: [[[8, 25], [10, 25], [12, 25], [13, 25], [14, 27], [15, 30], [17, 30], [18, 40], [20, 40], [22, 40], [25, 50], [30, 50], [35, 55], [50, 60], [60, 60], [80, 80], [100, 100]]]
+          args: [[1500], [0.55], [1], ["dot_product"]]
+          query-args: [[[1, 30], [2, 30], [4, 30], [8, 30], [8, 25], [10, 25], [12, 25], [13, 25], [14, 27], [15, 30], [17, 30], [18, 40], [20, 40], [22, 40], [25, 50], [30, 50], [35, 55], [50, 60], [60, 60], [80, 80], [100, 100]]]
         scann3:
-          args: [[1000], [.2], [1]]
-          query-args: [[[9, 25], [11, 35], [12, 35], [13, 35], [14, 40], [15, 40], [16, 40], [17, 45], [20, 45], [20, 55], [25, 55], [25, 70], [30, 70], [40, 90], [50, 100], [60, 120], [70, 140]]]
+          args: [[1000], [.2], [1], ["dot_product"]]
+          query-args: [[[1, 30], [2, 30], [4, 30], [8, 30], [9, 25], [11, 35], [12, 35], [13, 35], [14, 40], [15, 40], [16, 40], [17, 45], [20, 45], [20, 55], [25, 55], [25, 70], [30, 70], [40, 90], [50, 100], [60, 120], [70, 140]]]
+        scann4:
+          args: [[1400], [0.15], [3], ["dot_product"]]
+          query-args: [[[1, 30], [4, 30], [9, 30], [16, 32], [25, 50], [36, 72], [49, 98], [70, 150], [90, 200], [120, 210], [180, 270], [210, 330], [260, 400], [320, 500], [400, 600], [500, 700], [800, 900]]]
     elasticsearch:
       docker-tag: ann-benchmarks-elasticsearch
       module: ann_benchmarks.algorithms.elasticsearch
@@ -647,6 +865,40 @@ float:
       run-groups:
         empty:
           args: []
+    opendistroknn:
+      docker-tag: ann-benchmarks-opendistroknn
+      module: ann_benchmarks.algorithms.opendistroknn
+      constructor: OpenDistroKNN
+      base-args: ["@metric", "@dimension"]
+      run-groups:
+        M-4:
+          arg-groups:
+            - {"M": 4,  "efConstruction": 500}
+          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        M-8:
+          arg-groups:
+            - {"M": 8,  "efConstruction": 500}
+          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        M-12:
+          arg-groups:
+            - {"M": 12,  "efConstruction": 500}
+          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        M-16:
+          arg-groups:
+            - {"M": 16,  "efConstruction": 500}
+          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        M-24:
+          arg-groups:
+            - {"M": 24,  "efConstruction": 500}
+          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        M-36:
+          arg-groups:
+            - {"M": 36,  "efConstruction": 500}
+          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        M-48:
+          arg-groups:
+            - {"M": 48,  "efConstruction": 500}
+          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
 
 bit:
   hamming:
@@ -711,22 +963,22 @@ bit:
       run-groups:
         NN-20:
           arg-groups:
-            - {"n_neighbors": [20], "diversify_epsilon": [0.75, 1.0],
+            - {"n_neighbors": [20], "diversify_prob": [0.75, 1.0],
                "pruning_degree_multiplier":[1.0, 1.5], leaf_size: 32}
           query-args: [[0.0, 0.01, 0.02, 0.04, 0.08, 0.12, 0.16]]
         NN-40:
           arg-groups:
-            - {"n_neighbors": [40], "diversify_epsilon": [0.5, 1.0],
+            - {"n_neighbors": [40], "diversify_prob": [0.5, 1.0],
                "pruning_degree_multiplier":[1.5, 2.0], leaf_size: 48}
           query-args: [[0.0, 0.04, 0.08, 0.12, 0.16, 0.20, 0.24]]
         NN-80:
           arg-groups:
-            - {"n_neighbors": [80], "diversify_epsilon": [0.25, 1.0],
+            - {"n_neighbors": [80], "diversify_prob": [0.25, 1.0],
                "pruning_degree_multiplier":[1.75, 2.25], leaf_size: 64}
           query-args: [[0.0, 0.08, 0.12, 0.16, 0.20, 0.24, 0.28, 0.32]]
         NN-120:
           arg-groups:
-            - {"n_neighbors": [120], "diversify_epsilon": [0.0, 1.0],
+            - {"n_neighbors": [120], "diversify_prob": [0.0, 1.0],
                "pruning_degree_multiplier":[2.0, 2.5], leaf_size: 80}
           query-args: [[0.08, 0.16, 0.20, 0.24, 0.28, 0.32, 0.36]]
     annoy:
@@ -788,21 +1040,31 @@ bit:
       run-groups:
         NN-20:
           arg-groups:
-            - {"n_neighbors": [20], "diversify_epsilon": [0.75, 1.0],
-               "pruning_degree_multiplier":[1.0, 1.5], leaf_size: 32}
-          query-args: [[0.0, 0.01, 0.02, 0.04, 0.08, 0.12, 0.16]]
+            - {"n_neighbors": [20], "diversify_prob": [1.0],
+               "pruning_degree_multiplier":[0.5, 1.0], leaf_size: 20}
+          query-args: [[0.0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12]]
         NN-40:
           arg-groups:
-            - {"n_neighbors": [40], "diversify_epsilon": [0.5, 1.0],
-               "pruning_degree_multiplier":[1.5, 2.0], leaf_size: 48}
-          query-args: [[0.0, 0.04, 0.08, 0.12, 0.16, 0.20, 0.24]]
-        NN-80:
+            - {"n_neighbors": [40], "diversify_prob": [0.5, 1.0],
+               "pruning_degree_multiplier":[1.5], leaf_size: 25}
+          query-args: [[0.0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.16]]
+        NN-80-fast:
           arg-groups:
-            - {"n_neighbors": [80], "diversify_epsilon": [0.25, 1.0],
-               "pruning_degree_multiplier":[1.75, 2.25], leaf_size: 64}
-          query-args: [[0.0, 0.08, 0.12, 0.16, 0.20, 0.24, 0.28, 0.32]]
-        NN-120:
+            - {"n_neighbors": 80, diversify_prob: 1.0,
+               "pruning_degree_multiplier": 2.0, leaf_size: 20}
+          query-args: [[0.0, 0.02, 0.04, 0.08, 0.12, 0.16, 0.20, 0.24]]
+        NN-80-accurate:
           arg-groups:
-            - {"n_neighbors": [120], "diversify_epsilon": [0.0, 1.0],
-               "pruning_degree_multiplier":[2.0, 2.5], leaf_size: 80}
-          query-args: [[0.08, 0.16, 0.20, 0.24, 0.28, 0.32, 0.36]]
+            - {"n_neighbors": 80, diversify_prob: 0.25,
+                "pruning_degree_multiplier": 2.0, leaf_size: 30}
+          query-args: [[0.08, 0.12, 0.16, 0.20, 0.24, 0.28, 0.32, 0.36]]
+        NN-120-fast:
+          arg-groups:
+            - {"n_neighbors": 120, "diversify_prob": 1.0,
+               "pruning_degree_multiplier":2.5, leaf_size: 20}
+          query-args: [[0.0, 0.04, 0.08, 0.16, 0.20, 0.24, 0.28, 0.32]]
+        NN-120-accurate:
+          arg-groups:
+            - {"n_neighbors": 120, "diversify_prob": 0.125,
+               "pruning_degree_multiplier":2.5, leaf_size: 35}
+          query-args: [[0.16, 0.20, 0.24, 0.28, 0.32, 0.36]]

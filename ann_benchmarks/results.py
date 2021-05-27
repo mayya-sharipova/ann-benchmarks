@@ -7,16 +7,6 @@ import re
 import traceback
 
 
-def get_algorithm_name(name, batch_mode):
-    if batch_mode:
-        return name + "-batch"
-    return name
-
-
-def is_batch(name):
-    return "-batch" in name
-
-
 def get_result_filename(dataset=None, count=None, definition=None,
                         query_arguments=None, batch_mode=False):
     d = ['results']
@@ -25,17 +15,17 @@ def get_result_filename(dataset=None, count=None, definition=None,
     if count:
         d.append(str(count))
     if definition:
-        d.append(get_algorithm_name(definition.algorithm, batch_mode))
+        d.append(definition.algorithm + ('-batch' if batch_mode else ''))
         data = definition.arguments + query_arguments
-        d.append(re.sub(r'\W+', '_', json.dumps(data,
-                                                sort_keys=True)).strip('_'))
+        d.append(re.sub(r'\W+', '_', json.dumps(data, sort_keys=True))
+                 .strip('_'))
     return os.path.join(*d)
 
 
 def store_results(dataset, count, definition, query_arguments, attrs, results,
                   batch):
     fn = get_result_filename(
-        dataset, count, definition, query_arguments, batch)
+        dataset, count, definition, query_arguments, batch) + '.hdf5'
     head, tail = os.path.split(fn)
     if not os.path.isdir(head):
         os.makedirs(head)
@@ -52,22 +42,16 @@ def store_results(dataset, count, definition, query_arguments, attrs, results,
     f.close()
 
 
-def load_all_results(dataset=None, count=None, split_batched=False,
-                     batch_mode=False):
+def load_all_results(dataset=None, count=None, batch_mode=False):
     for root, _, files in os.walk(get_result_filename(dataset, count)):
         for fn in files:
+            if os.path.splitext(fn)[-1] != '.hdf5':
+                continue
             try:
-                if split_batched and batch_mode != is_batch(root):
-                    continue
                 f = h5py.File(os.path.join(root, fn), 'r+')
                 properties = dict(f.attrs)
-                # TODO Fix this properly. Sometimes the hdf5 file returns bytes
-                # This converts these bytes to strings before we work with them
-                for k in properties.keys():
-                    try:
-                        properties[k] = properties[k].decode()
-                    except:
-                        pass
+                if batch_mode != properties['batch_mode']:
+                    continue
                 yield properties, f
                 f.close()
             except:
@@ -77,6 +61,7 @@ def load_all_results(dataset=None, count=None, split_batched=False,
 
 def get_unique_algorithms():
     algorithms = set()
-    for properties, _ in load_all_results():
-        algorithms.add(properties['algo'])
+    for batch_mode in [False, True]:
+        for properties, _ in load_all_results(batch_mode=batch_mode):
+            algorithms.add(properties['algo'])
     return algorithms
