@@ -62,6 +62,8 @@ class LuceneBatch(BaseANN):
         output_filename = self.short_name + ".out"
         self.knn_tester('-niter', str(self.n_iters), '-topK', str(self.topK),
                         '-fanout', str(self.fanout),
+                        '-maxConn', str(self.param['M']),
+                        '-beamWidthIndex', str(self.param['efConstruction']),
                         '-search', data_filename,
                         '-warm', '0',
                         '-docs', self.short_name + '.train',
