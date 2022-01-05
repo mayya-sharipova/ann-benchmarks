@@ -15,15 +15,13 @@ class LuceneBatch(BaseANN):
     """
 
     def __init__(self, metric: str, dimension: int, param):
-        self.name = f"luceneknn dim={dimension} {param}"
         self.metric = metric
         self.dimension = dimension
         self.param = param
         self.short_name = f"luceneknn-{dimension}-{param['M']}-{param['efConstruction']}"
         self.n_iters = -1
         self.train_size = -1
-        #if self.metric not in ("euclidean", "angular"):
-        if self.metric != "angular":
+        if self.metric not in ("euclidean", "angular"):
             raise NotImplementedError(f"Not implemented for metric {self.metric}")
 
     def fit(self, X):
@@ -44,6 +42,7 @@ class LuceneBatch(BaseANN):
 
     def set_query_arguments(self, fanout):
         self.fanout = fanout
+        self.name = f"luceneknn dim={self.dimension} {self.param} fanout={fanout}"
 
     def query(self, q, n):
         raise NotImplementedError(f"Single query testing not implemented: use -batch mode only")
@@ -82,12 +81,14 @@ class LuceneBatch(BaseANN):
         assert len(batch_res) == self.n_iters
         return batch_res
 
+
     def knn_tester(self, *args):
         cmd = ['java',
                '-cp', 'lib/*:classes',
                '-Xmx2g', '-Xms2g',
                'org.apache.lucene.util.hnsw.KnnGraphTester',
-               '-dim', str(self.dimension)
+               '-dim', str(self.dimension),
+               '-metric', str(self.metric)
         ] + list(args)
         sys.stderr.write(str(cmd))
         subprocess.run(cmd)
